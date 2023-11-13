@@ -21,3 +21,16 @@ Mas caso você não passe um nome o nome padrão usado será "User"
   "sobrenome": "da Silva"
 }
 ```
+
+RESPONSE
+
+```json
+{
+  "status": "success",
+  "message": "Logado com sucesso!",
+  "data": {
+    "session": "session-token",
+    "userId": 1
+  }
+}
+```

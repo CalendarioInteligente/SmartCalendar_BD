@@ -67,7 +67,8 @@ router.route('/').get(async (req, res) => {
 })
 
 // USUARIO
-router.route('/usuarios').post(async (req, res) => {
+// '/usuarios'
+router.route('/api/login').post(async (req, res) => {
     // 'UNDEFINED' significa que o valor não foi enviado, não que ele é nulo
     const { email, senha, telefone, nome, sobrenome } = req.body;
     const id = -1;
@@ -119,7 +120,7 @@ router.route('/usuarios').post(async (req, res) => {
     }
 
     res.set('Set-Cookie', `session=${sessionId}`)
-
+    
     return res.status(201).json(newMessage('OK', 'Usuario criado com sucesso', 'Seu usuario foi criado no servidor'))
 })
 .get(async (req, res) => {
@@ -154,6 +155,8 @@ router.route('/usuarios').post(async (req, res) => {
     }
 
     res.set('Set-Cookie', `session=${sessionId}`)
+
+    // Redirect user to the main page
     return res.status(200).json(newMessage('OK', 'Logado com sucesso', 'As informações corretas foram providas!'))
 })
 
