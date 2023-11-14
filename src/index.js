@@ -2,6 +2,7 @@ const db = require('./db')
 const express = require("express");
 const router = require('./routes');
 const allowedOrigins = require('../config/allowedOrigins')
+const cookieParser = require('cookie-parser')
 
 const PORT = 3000
 
@@ -29,6 +30,7 @@ async function startServer() {
       });
 
     app.use(express.json())
+    app.use(cookieParser());
     app.use(router)
 
     console.log(`Servidor escutando na porta: ${PORT}`)

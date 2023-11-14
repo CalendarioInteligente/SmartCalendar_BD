@@ -8,6 +8,8 @@ const db = require("./db")
 const models = require('./models/usuario.js')
 const newMessage = require('./message.js')
 
+const cookieParser = require('cookie-parser')
+
 let router = express.Router()
 
 // Criptografa a senha
@@ -41,7 +43,12 @@ const newSession = async (userId) => {
     return sessionId;
 }
 
-const validateTokenGetId = async (sessionId) => {
+const validateTokenGetId = async (req) => {
+    const sessionId = req?.cookies["session"]
+
+    if (!sessionId) {
+        return false;
+    }
 
     // Procura pelo token no banco de dados
     const recordset = await db.querySession({sessionId: Buffer.from(uuidParse(sessionId))})
@@ -56,10 +63,9 @@ const validateTokenGetId = async (sessionId) => {
 // DASHBOARD PAGINA PRINCIPAL
 router.route('/').get(async (req, res) => {
     // Verifica os tokens
-    const sessionId = req.headers.cookie.split('=')[1];
-    const userId = await validateTokenGetId(sessionId);
+    const userId = await validateTokenGetId(req);
 
-    if (userId === undefined || userId === null) {
+    if (userId === undefined || userId === false) {
         return res.status(400).json(newMessage('TIV', 'Token Inválido', 'Não foi possivel validar seu token.'))
     }
     
@@ -119,7 +125,8 @@ router.route('/api/login').post(async (req, res) => {
         return res.status(203).json(newMessage('CRE', 'Falha ao criar sessão.', 'Usuario registrado mas houve uma falha na hora de criar a sessão, tente logar novamente.'))
     }
 
-    res.set('Set-Cookie', `session=${sessionId}`)
+    //res.set('Set-Cookie', `session=${sessionId}`)
+    res.cookie('session', sessionId)
     
     return res.status(201).json(newMessage('OK', 'Usuario criado com sucesso', 'Seu usuario foi criado no servidor'))
 })
@@ -154,7 +161,8 @@ router.route('/api/login').post(async (req, res) => {
         return res.status(500).json(newMessage('CRE', 'Falha ao criar sessão.', 'Usuario logado mas houve uma falha na hora de criar a sessão.'))
     }
 
-    res.set('Set-Cookie', `session=${sessionId}`)
+    //res.set('Set-Cookie', `session=${sessionId}`)
+    res.cookie('session', sessionId)
 
     // Redirect user to the main page
     return res.status(200).json(newMessage('OK', 'Logado com sucesso', 'As informações corretas foram providas!'))
