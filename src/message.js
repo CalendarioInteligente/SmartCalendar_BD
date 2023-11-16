@@ -8,13 +8,14 @@ const newMessage = (tipo, titulo, descricao) => {
     }
 }
 
-const newResponse = (status, data, message) => {
+const newResponse = (type, message, data=null) => {
     return {
-        status: status, // "error" or "success"
-        data: data, // object, can be null
-        message: message
+        type: type,
+        message: message,
+        data: data // object, can be null
+        
     }
 }
 
 
-module.exports = newMessage;
+module.exports = {newMessage, newResponse};

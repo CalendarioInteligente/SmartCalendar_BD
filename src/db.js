@@ -78,6 +78,53 @@ async function queryUsuarioByEmail(model) {
     return results.recordset[0];
 }
 
+async function queryEvento(model) {
+    const pool = await getConnection();
+
+    if (!pool) {
+        return undefined;
+    }
+
+    const query = 'SELECT TOP(1) * FROM CALENDARIO.Session WHERE id = @id'
+    const params = {
+        id: model.id
+    }
+
+    let results;
+    try {
+        results = await pool.request().input('id', sql.Int, params.id)
+                                      .query(query)
+    } catch {
+        return false;
+    }
+
+    return results.recordset[0];
+}
+
+// Delete
+async function deleteEvento(model) {
+    const pool = await getConnection();
+
+    if (!pool) {
+        return undefined;
+    }
+
+    const query = 'DELETE FROM CALENDARIO.Evento WHERE id = @id'
+    const params = {
+        id: model.id
+    }
+
+    let results;
+    try {
+        results = await pool.request().input('id', sql.Int, params.id)
+                                      .query(query)
+    } catch {
+        return false;
+    }
+
+    return results.rowsAffected;
+}
+
 // Inserts
 async function insertUsuario(model) {
     const pool = await getConnection();
@@ -93,6 +140,37 @@ async function insertUsuario(model) {
         p3: model.email,
         p4: model.telefone,
         p5: model.senha
+    }
+
+    let results;
+    try {
+        results = await pool.request().input('p1', sql.VarChar, params.p1)
+                                .input('p2', sql.VarChar, params.p2)
+                                .input('p3', sql.VarChar, params.p3)
+                                .input('p4', sql.VarChar, params.p4)
+                                .input('p5', sql.Char, params.p5)
+                                .query(query)
+    } catch {
+        return false;
+    }
+
+    return results.rowsAffected;
+}
+
+async function insertEvento(model) {
+    const pool = await getConnection();
+
+    if (!pool) {
+        return undefined;
+    }
+
+    const query = 'INSERT INTO CALENDARIO.Eventos(descricao, titulo, idUsuario, data, tipo) values(@p1, @p2, @p3, @p4, @p5)'
+    const params = {
+        p1: model.descricao,
+        p2: model.titulo,
+        p3: model.idUsuario,
+        p4: model.data,
+        p5: model.tipo
     }
 
     let results;
@@ -184,4 +262,4 @@ async function createDatabase() {
     return true;
 }
 
-module.exports = {getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession}
+module.exports = {getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession, insertEvento, deleteEvento}

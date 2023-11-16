@@ -15,13 +15,6 @@ CREATE TABLE CALENDARIO.Usuario
 CREATE UNIQUE INDEX IDX_TELEFONE_NOTNULL
 ON CALENDARIO.Usuario(telefone) WHERE telefone IS NOT NULL;
 
-CREATE TABLE Calendario.Tipo
-(
-	id int not null,
-	nome varchar(10) not null,
-	primary key(id)
-)
-
 CREATE TABLE CALENDARIO.Evento
 (
 	id int IDENTITY(1, 1) NOT NULL,
@@ -29,7 +22,6 @@ CREATE TABLE CALENDARIO.Evento
 	titulo varchar(40) not null,
 	idUsuario int not null,
 	data datetime not null,
-	tipo int not null default 0,
 	foreign key(tipo) references CALENDARIO.Tipo(id),
 	foreign key(idUsuario) references CALENDARIO.Usuario(id),
 	PRIMARY KEY(id)
@@ -41,6 +33,12 @@ CREATE TABLE CALENDARIO.FormaNotificacao
 	nome varchar(10) not null,
 	primary key(id)
 )
+
+INSERT INTO CALENDARIO.FormaNotificacao
+	(id, nome)
+VALUES
+	(1, 'email'),
+	(2, 'whatsapp');
 
 CREATE TABLE CALENDARIO.Notificacao
 (

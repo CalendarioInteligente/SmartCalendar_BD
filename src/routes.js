@@ -5,8 +5,8 @@ const uuidParse = require('uuid').parse;
 const uuidv4 = require('uuid').v4;
 
 const db = require("./db")
-const models = require('./models/usuario.js')
-const newMessage = require('./message.js')
+const models = require('./models/models.js')
+const {newResponse, newMessage} = require('./message.js')
 
 const cookieParser = require('cookie-parser')
 
@@ -66,10 +66,10 @@ router.route('/').get(async (req, res) => {
     const userId = await validateTokenGetId(req);
 
     if (userId === undefined || userId === false) {
-        return res.status(400).json(newMessage('TIV', 'Token Inválido', 'Não foi possivel validar seu token.'))
+        return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))//newMessage('TIV', 'Token Inválido', 'Não foi possivel validar seu token.'))
     }
     
-    return res.status(200).json(newMessage('OK', 'Requisição completa', 'Sua autenticação é válida'))
+    return res.status(200).json(newResponse('OK', 'Sua autenticação é válida.'))//newMessage('OK', 'Requisição completa', 'Sua autenticação é válida'))
 })
 
 // USUARIO
@@ -80,22 +80,22 @@ router.route('/api/login').post(async (req, res) => {
     const id = -1;
 
     if (!await db.getConnection()) {
-        return res.status(500).json(newMessage('CBD', 'Sem conexão com o banco de dados', 'Não foi possivel acessar o banco de dados.'))
+        return res.status(500).json(newResponse('CBD', 'Sem conexão com o banco de dados'))
     }
 
     // Checa por dados desnecessários
     if (Object.keys(req.body).length > 5) {
-        return res.status(400).json(newMessage('DTE', 'Dados desnecessários', 'Mais dados que o necessário foram enviados.'))
+        return res.status(400).json(newResponse('DTE', 'Dados desnecessários'))
     }
 
     // Email e senha são dados obrigatórios
     if (!(email && senha)) {
-        return res.status(400).json(newMessage('DTE', 'Tipos de dados invalidos', 'Uma senha e email é necessário para que o usuario seja criado.'))
+        return res.status(400).json(newResponse('DTE', 'Tipos de dados invalidos, uma senha e email é necessário para que o usuario seja criado.'))
     }
 
     // Checa se tem valores indefinidos
     if (telefone === undefined || nome === undefined || sobrenome === undefined) {
-        return res.status(400).json(newMessage('DTE', 'Dados faltando', 'Não omita nenhum dos dados, envie como nulo se for necessário.'))
+        return res.status(400).json(newResponse('DTE', 'Dados faltando, não omita dados, envie nulo se necessário'))
     };
 
     // Cria o modelo usuario
@@ -105,16 +105,16 @@ router.route('/api/login').post(async (req, res) => {
         // Caso um nome não tenha sido especificado usa o nome "User" com o sobrenome ""
         usuario = new models.Usuario(id, nome ? nome : "User", sobrenome ? sobrenome : "", email, telefone, encryptPWD(senha));
     } catch {
-        return res.status(400).json(newMessage('DTE', 'Tipos de dados invalidos', 'Não foi possivel construir um modelo de usuario a partir dos dados enviados.'))
+        return res.status(400).json(newResponse('DTE', 'Tipos de dados invalidos'))
     }
 
     // Cria o usuario no banco de dados
     let result = await db.insertUsuario(usuario);
 
     if (result === undefined) {
-        return res.status(500).json(newMessage('CBD', 'Sem conexão com o banco de dados', 'Não foi possivel acessar o banco de dados.'))
+        return res.status(500).json(newResponse('CBD', 'Sem conexão com o banco de dados'))
     } else if (result === false) {
-        return res.status(400).json(newMessage('ERR', 'Email ou telefone já usado', 'Não é possivel dois ou mais usuarios compartilharem do mesmo email/telefone.'))
+        return res.status(400).json(newResponse('ERR', 'Email ou telefone já usado'))
     }
 
     // Cria uma sessão para o usuario
@@ -122,51 +122,174 @@ router.route('/api/login').post(async (req, res) => {
     const sessionId = await newSession(recordset.id);
 
     if (!sessionId) {
-        return res.status(203).json(newMessage('CRE', 'Falha ao criar sessão.', 'Usuario registrado mas houve uma falha na hora de criar a sessão, tente logar novamente.'))
+        return res.status(203).json(newResponse('CRE', 'Usuario registrado mas falha ao criar sessão. Tente logar novamente.'))
     }
 
     //res.set('Set-Cookie', `session=${sessionId}`)
     res.cookie('session', sessionId)
+
+    const toSend = {
+        session: sessionId,
+        userId: recordset.id
+    }
     
-    return res.status(201).json(newMessage('OK', 'Usuario criado com sucesso', 'Seu usuario foi criado no servidor'))
+    return res.status(201).json(newResponse('OK', 'Usuario criado com sucesso', toSend))
 })
 .get(async (req, res) => {
     const { email, senha } = req.body;
 
     if (!await db.getConnection()) {
-        return res.status(500).json(newMessage('CBD', 'Sem conexão com o banco de dados', 'Não foi possivel acessar o banco de dados.'))
+        return res.status(500).json(newResponse('CBD', 'Sem conexão com o banco de dados'))
     }
 
     // Checa por dados desnecessários
     if ((Object.keys(req.body).length != 2) || !(email && senha)) {
-        return res.status(400).json(newMessage('DTE', 'Dados incorretos', 'Envie um email e uma senha.'))
+        return res.status(400).json(newResponse('DTE', 'Envie um email e uma senha'))
     }
 
     // Busca pelo usuario
     let recordset = await db.queryUsuarioByEmail({email: email})
 
     if (!recordset) {
-        return res.status(400).json(newMessage('DTE', 'Email incorreto', 'Não existe ninguem com este email.'))
+        return res.status(400).json(newResponse('DTE', 'Email incorreto'))
     }
 
     // Verifica se a senha está correta
     if (!comparePWD(senha, recordset.senha)) {
-        return res.status(400).json(newMessage('DTE', 'Senha incorreta', 'Tente novamente.'))
+        return res.status(400).json(newResponse('DTE', 'Senha incorreta'))
     }
 
     // Cria uma sessão para o usuario
     const sessionId = await newSession(recordset.id);
 
     if (!sessionId) {
-        return res.status(500).json(newMessage('CRE', 'Falha ao criar sessão.', 'Usuario logado mas houve uma falha na hora de criar a sessão.'))
+        return res.status(500).json(newResponse('CRE', 'Usuario logado mas falha ao criar sessão.'))
     }
 
     //res.set('Set-Cookie', `session=${sessionId}`)
     res.cookie('session', sessionId)
 
+    const toSend = {
+        session: sessionId,
+        userId: recordset.id
+    }
+
     // Redirect user to the main page
-    return res.status(200).json(newMessage('OK', 'Logado com sucesso', 'As informações corretas foram providas!'))
+    return res.status(200).json(newResponse('OK', 'Logado com sucesso', toSend))
 })
 
+// Eventos
+router.route('/api/agendamentos').post(async (req, res) => {
+    const { titulo, descricao, data, tipo } = req.body
+    // data: "YYYY-MM-DD HH:MM:SS"
 
+    if (!await db.getConnection()) {
+        return res.status(500).json(newResponse('CBD', 'Sem conexão com o banco de dados'))
+    }
+
+    // Verifica os tokens
+    const userId = await validateTokenGetId(req);
+
+    if (userId === undefined || userId === false) {
+        return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
+    }
+
+    if (Object.keys(req.body).length != 4) {
+        return res.status(400).json(newResponse('DTE', 'Dados incorretos'))
+    }
+
+    if (titulo === undefined || descricao === undefined || data === undefined || tipo === undefined) {
+        return res.status(400).json(newResponse('DTE', 'Não omita nenhum dos dados, envie como nulo se for necessário.'))
+    }
+
+    // Cria modelo e envia para o BD
+    let evento;
+    try {
+        evento = new models.Evento(descricao, titulo, userId, Date.parse(data).toISOString().slice(0, 19).replace('T', ' '), tipo);
+    } catch {
+        return res.status(400).json(newResponse('DTE', 'Não foi possivel construir um modelo de usuario a partir dos dados enviados.'))
+    }
+
+    let result = await db.insertEvento(evento);
+
+    if (result === undefined) {
+        return res.status(500).json(newResponse('CBD', 'Não foi possivel acessar o banco de dados.'))
+    } else if (result === false) {
+        return res.status(400).json(newResponse('ERR', 'Conflito com outros eventos.'))
+    }
+
+    return res.status(200).json(newResponse('OK', 'Seu agendamento foi armazenado com sucesso!'))
+})
+
+router.route('/api/agendamentos/:id').delete(async (req, res) => {
+    const id = parseInt(req.params?.id);
+
+    if (isNaN(id)) {
+        return res.status(400).json(newResponse('COD', 'ID inválido.'))
+    }
+
+    // Verifica se este usuario tem permissão para deletar este evento
+    const userId = await validateTokenGetId(req);
+    const evento = await db.queryEvento({id: id});
+
+    if (userId === undefined || userId === false) {
+        return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
+    }
+    
+    if (eventoId === undefined || eventoId === false) {
+        return res.status(400).json(newResponse('EIN', 'Não foi possivel encontrar este evento.'))
+    }
+
+    if (evento.idUsuario !== userId) {
+        return res.status(400).json(newResponse('TIV', 'Você não está autorizado a fazer esta ação.'))
+    } 
+
+    const result = db.deleteEvento({id: id})
+
+    if (!result) {
+        return res.status(500).json(newResponse('NDT', 'Não foi possivel deletar este evento.'))
+    }
+
+    return res.status(201).json(newResponse('OK', 'O evento foi deletado com sucesso!'))
+})
+.get(async (req, res) => {
+    const id = parseInt(req.params?.id);
+
+    if (isNaN(id)) {
+        return res.status(400).json(newResponse('COD', 'ID inválido.'))
+    }
+
+    // Verifica se este usuario tem permissão para deletar este evento
+    const userId = await validateTokenGetId(req);
+    const evento = await db.queryEvento({id: id});
+
+    if (userId === undefined || userId === false) {
+        return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
+    }
+    
+    if (eventoId === undefined || eventoId === false) {
+        return res.status(400).json(newResponse('EIN', 'Não foi possivel encontrar este evento.'))
+    }
+
+    if (evento.idUsuario !== userId) {
+        return res.status(400).json(newResponse('TIV', 'Você não está autorizado a fazer esta ação.'))
+    } 
+
+    const result = db.queryEvento({id: id})
+
+    if (!result) {
+        return res.status(500).json(newResponse('NDT', 'Não foi possivel deletar este evento.'))
+    }
+
+    const toSend = {
+        titulo: result.titulo,
+        descricao: result.descricao,
+        id: id
+    }
+
+    return res.status(200).json(newResponse('OK', 'O evento foi encontrado!', JSON.stringify(toSend)))
+})
+.put(async (req, res) => {
+    // ATUALIZA EVENTO INTEIRO
+})
 module.exports = router

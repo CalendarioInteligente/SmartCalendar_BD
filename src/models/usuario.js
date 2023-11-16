@@ -77,12 +77,4 @@ class Usuario {
 
 }
 
-class Evento {
-
-    constructor() {
-
-    }
-
-}
-
-module.exports = {Usuario, Evento}
+module.exports = Usuario;
