@@ -74,7 +74,7 @@ router.route('/').get(async (req, res) => {
 
 // USUARIO
 // '/usuarios'
-router.route('/api/login').post(async (req, res) => {
+router.route('/api/register').post(async (req, res) => {
     // 'UNDEFINED' significa que o valor não foi enviado, não que ele é nulo
     const { email, senha, telefone, nome, sobrenome } = req.body;
     const id = -1;
@@ -135,7 +135,7 @@ router.route('/api/login').post(async (req, res) => {
     
     return res.status(201).json(newResponse('OK', 'Usuario criado com sucesso', toSend))
 })
-.get(async (req, res) => {
+router.route('/api/login').post(async (req, res) => {
     const { email, senha } = req.body;
 
     if (!await db.getConnection()) {
@@ -180,7 +180,7 @@ router.route('/api/login').post(async (req, res) => {
 
 // Eventos
 router.route('/api/agendamentos').post(async (req, res) => {
-    const { titulo, descricao, data, tipo } = req.body
+    const { titulo, descricao, data } = req.body
     // data: "YYYY-MM-DD HH:MM:SS"
 
     if (!await db.getConnection()) {
@@ -194,20 +194,21 @@ router.route('/api/agendamentos').post(async (req, res) => {
         return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
     }
 
-    if (Object.keys(req.body).length != 4) {
+    if (Object.keys(req.body).length != 3) {
         return res.status(400).json(newResponse('DTE', 'Dados incorretos'))
     }
 
-    if (titulo === undefined || descricao === undefined || data === undefined || tipo === undefined) {
+    if (titulo === undefined || descricao === undefined || data === undefined) {
         return res.status(400).json(newResponse('DTE', 'Não omita nenhum dos dados, envie como nulo se for necessário.'))
     }
 
     // Cria modelo e envia para o BD
+    console.log(data.slice(0, 19).replace('T', ' '))
     let evento;
     try {
-        evento = new models.Evento(descricao, titulo, userId, Date.parse(data).toISOString().slice(0, 19).replace('T', ' '), tipo);
+        evento = new models.Evento(descricao, titulo, userId, data.slice(0, 19).replace('T', ' '));
     } catch {
-        return res.status(400).json(newResponse('DTE', 'Não foi possivel construir um modelo de usuario a partir dos dados enviados.'))
+        return res.status(400).json(newResponse('DTE', 'Não foi possivel construir um modelo de evento a partir dos dados enviados.'))
     }
 
     let result = await db.insertEvento(evento);

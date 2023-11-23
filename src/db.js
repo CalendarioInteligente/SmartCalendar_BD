@@ -150,7 +150,7 @@ async function insertUsuario(model) {
                                 .input('p4', sql.VarChar, params.p4)
                                 .input('p5', sql.Char, params.p5)
                                 .query(query)
-    } catch {
+    } catch(e) {
         return false;
     }
 
@@ -164,24 +164,23 @@ async function insertEvento(model) {
         return undefined;
     }
 
-    const query = 'INSERT INTO CALENDARIO.Eventos(descricao, titulo, idUsuario, data, tipo) values(@p1, @p2, @p3, @p4, @p5)'
+    const query = 'INSERT INTO CALENDARIO.Evento(descricao, titulo, idUsuario, data) values(@p1, @p2, @p3, @p4)'
     const params = {
         p1: model.descricao,
         p2: model.titulo,
         p3: model.idUsuario,
-        p4: model.data,
-        p5: model.tipo
+        p4: model.data
     }
 
     let results;
     try {
         results = await pool.request().input('p1', sql.VarChar, params.p1)
                                 .input('p2', sql.VarChar, params.p2)
-                                .input('p3', sql.VarChar, params.p3)
-                                .input('p4', sql.VarChar, params.p4)
-                                .input('p5', sql.Char, params.p5)
+                                .input('p3', sql.Int, params.p3)
+                                .input('p4', sql.DateTime, params.p4)
                                 .query(query)
-    } catch {
+    } catch(e) {
+        console.log(e);
         return false;
     }
 

@@ -22,7 +22,6 @@ CREATE TABLE CALENDARIO.Evento
 	titulo varchar(40) not null,
 	idUsuario int not null,
 	data datetime not null,
-	foreign key(tipo) references CALENDARIO.Tipo(id),
 	foreign key(idUsuario) references CALENDARIO.Usuario(id),
 	PRIMARY KEY(id)
 )
