@@ -31,6 +31,29 @@ async function insertSession(model) {
     return results.rowsAffected;
 }
 
+async function removeSession(model) {
+    const pool = await getConnection();
+
+    if (!pool) {
+        return undefined;
+    }
+
+    const query = 'DELETE FROM CALENDARIO.Session WHERE userId = @userId'
+    const params = {
+        userId: model.userId
+    }
+
+    let results;
+    try {
+        results = await pool.request().input('userId', sql.Int, params.userId)
+                                      .query(query)
+    } catch {
+        return false;
+    }
+
+    return results.rowsAffected;
+}
+
 // Select
 async function querySession(model) {
     const pool = await getConnection();
@@ -261,4 +284,4 @@ async function createDatabase() {
     return true;
 }
 
-module.exports = {getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession, insertEvento, deleteEvento}
+module.exports = {getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession, insertEvento, deleteEvento, removeSession}

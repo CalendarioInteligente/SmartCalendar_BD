@@ -60,6 +60,23 @@ const validateTokenGetId = async (req) => {
     return recordset.userId;
 }
 
+// Valida o usuario pela API
+router.route('/api/oauth').get(async (req, res) => {
+    // Verifica os tokens
+    const userId = await validateTokenGetId(req);
+
+    if (userId === undefined || userId === false) {
+        return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
+    }
+    
+    const toSend = {
+        session: req.cookies["session"],
+        userId: userId
+    }
+
+    return res.status(200).json(newResponse('OK', 'Sua autenticação é válida.', toSend))
+})
+
 // DASHBOARD PAGINA PRINCIPAL
 router.route('/').get(async (req, res) => {
     // Verifica os tokens
@@ -176,6 +193,24 @@ router.route('/api/login').post(async (req, res) => {
 
     // Redirect user to the main page
     return res.status(200).json(newResponse('OK', 'Logado com sucesso', toSend))
+})
+router.route('/api/logout').post(async (req, res) => {
+    // Verifica os tokens
+    const userId = await validateTokenGetId(req);
+
+    if (userId === undefined || userId === false) {
+        return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
+    }
+
+    let result = await db.removeSession({userId: userId});
+
+    if (!result) {
+        return res.status(500).json(newResponse('NDT', 'Não foi possivel deletar a sessão.'))
+    }
+
+    res.clearCookie("session")
+
+    return res.status(200).json(newResponse('OK', 'Você foi disconectado.'))
 })
 
 // Eventos
