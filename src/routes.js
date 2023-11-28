@@ -91,7 +91,7 @@ router.route('/').get(async (req, res) => {
 
 // USUARIO
 // '/usuarios'
-router.route('/api/register').post(async (req, res) => {
+router.route('/api/signup').post(async (req, res) => {
     // 'UNDEFINED' significa que o valor não foi enviado, não que ele é nulo
     const { email, senha, telefone, nome, sobrenome } = req.body;
     const id = -1;
