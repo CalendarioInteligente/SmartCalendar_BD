@@ -12,7 +12,7 @@ ATENÇÃO: "data" pode ser um valor nulo ao invés de um objeto.
 Os valores `telefone`, `nome` e `sobrenome` são opcionais e podem ser nulos
 Mas caso você não passe um nome "User" será usado, e o sobrenome será uma string vazia.
 
-`POST "/api/register/"`
+`POST "/api/signup/"`
 
 ```json
 {
