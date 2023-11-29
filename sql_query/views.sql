@@ -1,5 +1,5 @@
 -- VIEW EVENTO
-create or alter view CALENDARIO.Eventos as 
+create or alter view CALENDARIO.ViewEventos as 
 select 
 	U.nome,
 	U.sobrenome,
