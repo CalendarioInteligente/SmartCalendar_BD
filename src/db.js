@@ -108,7 +108,7 @@ async function queryEvento(model) {
         return undefined;
     }
 
-    const query = 'SELECT TOP(1) * FROM CALENDARIO.Session WHERE id = @id'
+    const query = 'SELECT TOP(1) * FROM CALENDARIO.Evento WHERE id = @id'
     const params = {
         id: model.id
     }
@@ -122,6 +122,29 @@ async function queryEvento(model) {
     }
 
     return results.recordset[0];
+}
+
+async function queryAllEventos(model) {
+    const pool = await getConnection();
+
+    if (!pool) {
+        return undefined;
+    }
+
+    const query = 'SELECT * FROM CALENDARIO.Evento WHERE idUsuario = @idUsuario'
+    const params = {
+        idUsuario: model.id
+    }
+
+    let results;
+    try {
+        results = await pool.request().input('idUsuario', sql.Int, params.idUsuario)
+                                      .query(query)
+    } catch {
+        return false;
+    }
+
+    return results.recordset;
 }
 
 // Delete
@@ -281,7 +304,37 @@ async function createDatabase() {
         } catch {}
     }
 
+    // CRIA PROCEDURES
+    try {
+        text = fs.readFileSync("../sql_query/procedures.sql", "utf-8");
+    } catch(e) {
+        console.error("Não foi possivel encontrar o arquivo 'procedures.sql'")
+    }
+
+    if (text) {
+        try {
+            if (await pool.request().batch(text)) {
+                console.log("Procedures criados com sucesso!");
+            }
+        } catch {}
+    }
+
+    // CRIA VIEWS
+    try {
+        text = fs.readFileSync("../sql_query/views.sql", "utf-8");
+    } catch(e) {
+        console.error("Não foi possivel encontrar o arquivo 'views.sql'")
+    }
+
+    if (text) {
+        try {
+            if (await pool.request().batch(text)) {
+                console.log("Views criadas com sucesso!");
+            }
+        } catch {}
+    }
+
     return true;
 }
 
-module.exports = {getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession, insertEvento, deleteEvento, removeSession}
+module.exports = {getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession, insertEvento, queryEvento, deleteEvento, removeSession, queryAllEventos}

@@ -257,6 +257,47 @@ router.route('/api/agendamentos').post(async (req, res) => {
     return res.status(200).json(newResponse('OK', 'Seu agendamento foi armazenado com sucesso!'))
 })
 
+router.route('/api/user/:id/agendamentos').get(async (req, res) => {
+    const id = parseInt(req.params?.id);
+
+    if (isNaN(id)) {
+        return res.status(400).json(newResponse('COD', 'ID inválido.'))
+    }
+
+    if (!await db.getConnection()) {
+        return res.status(500).json(newResponse('CBD', 'Sem conexão com o banco de dados'))
+    }
+
+    // Verifica os tokens
+    const userId = await validateTokenGetId(req);
+
+    if (userId === undefined || userId === false) {
+        return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
+    }
+
+    if (userId !== id) {
+        return res.status(400).json(newResponse('TIV', 'Você não está autorizado a acessar este usuário.'))
+    }
+
+    // Pega todos agendamentos deste usuario
+    const result = await db.queryAllEventos({id: userId})
+
+    if (!result) {
+        return res.status(500).json(newResponse('NDT', 'Não foi possivel obter os agendamentos.'))
+    }
+
+    const toSend = result.map((v) => {
+        return {
+            titulo: v.titulo,
+            descricao: v.descricao,
+            data: v.data,
+            id: v.id
+        }
+    })
+
+    return res.status(200).json(newResponse('OK', 'Os agendamentos foram encontrados!', JSON.stringify(toSend)))
+})
+
 router.route('/api/agendamentos/:id').delete(async (req, res) => {
     const id = parseInt(req.params?.id);
 
@@ -272,7 +313,7 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
         return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
     }
     
-    if (eventoId === undefined || eventoId === false) {
+    if (!evento) {
         return res.status(400).json(newResponse('EIN', 'Não foi possivel encontrar este evento.'))
     }
 
@@ -290,6 +331,7 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
 })
 .get(async (req, res) => {
     const id = parseInt(req.params?.id);
+    return res.status(500).json(newResponse('TODO', 'NOT IMPLEMENTED.'))
 
     if (isNaN(id)) {
         return res.status(400).json(newResponse('COD', 'ID inválido.'))
