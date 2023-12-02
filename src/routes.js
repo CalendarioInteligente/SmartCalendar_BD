@@ -368,6 +368,60 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
     return res.status(200).json(newResponse('OK', 'O evento foi encontrado!', JSON.stringify(toSend)))
 })
 .put(async (req, res) => {
-    // ATUALIZA EVENTO INTEIRO
+    const { titulo, descricao, data } = req.body
+    // data: "YYYY-MM-DD HH:MM:SS"
+
+    const id = parseInt(req.params?.id);
+
+    if (isNaN(id)) {
+        return res.status(400).json(newResponse('COD', 'ID inválido.'))
+    }
+
+    // Verifica se este usuario tem permissão para deletar este evento
+    const userId = await validateTokenGetId(req);
+    const evento = await db.queryEvento({id: id});
+
+    if (userId === undefined || userId === false) {
+        return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
+    }
+    
+    if (!evento) {
+        return res.status(400).json(newResponse('EIN', 'Não foi possivel encontrar este evento.'))
+    }
+
+    if (evento.idUsuario !== userId) {
+        return res.status(400).json(newResponse('TIV', 'Você não está autorizado a fazer esta ação.'))
+    } 
+
+    if (!await db.getConnection()) {
+        return res.status(500).json(newResponse('CBD', 'Sem conexão com o banco de dados'))
+    }
+
+    if (Object.keys(req.body).length != 3) {
+        return res.status(400).json(newResponse('DTE', 'Dados incorretos'))
+    }
+
+    if (titulo === undefined || descricao === undefined || data === undefined) {
+        return res.status(400).json(newResponse('DTE', 'Não omita nenhum dos dados, envie como nulo se for necessário.'))
+    }
+
+    // Cria modelo e envia para o BD
+    console.log(data.slice(0, 19).replace('T', ' '))
+    let new_evento;
+    try {
+        new_evento = new models.Evento(descricao, titulo, userId, data.slice(0, 19).replace('T', ' '), evento.id);
+    } catch {
+        return res.status(400).json(newResponse('DTE', 'Não foi possivel construir um modelo de evento a partir dos dados enviados.'))
+    }
+
+    let result = await db.updateEvento(new_evento);
+
+    if (result === undefined) {
+        return res.status(500).json(newResponse('CBD', 'Não foi possivel acessar o banco de dados.'))
+    } else if (result === false) {
+        return res.status(400).json(newResponse('ERR', 'Conflito com outros eventos.'))
+    }
+
+    return res.status(200).json(newResponse('OK', 'Seu agendamento foi armazenado com sucesso!'))
 })
 module.exports = router

@@ -5,12 +5,14 @@ class Evento {
     #titulo
     #idUsuario
     #data
+    #id
 
-    constructor(descricao, titulo, idUsuario, data) {
+    constructor(descricao, titulo, idUsuario, data, id=-1) {
         this.#descricao = descricao
         this.#titulo = titulo
         this.#idUsuario = idUsuario
         this.#data = data
+        this.#id = id
     }
 
     get descricao() {
@@ -27,6 +29,10 @@ class Evento {
 
     get data() {
         return this.#data
+    }
+
+    get id() {
+        return this.#id
     }
 
 }

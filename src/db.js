@@ -171,6 +171,40 @@ async function deleteEvento(model) {
     return results.rowsAffected;
 }
 
+async function updateEvento(model) {
+    const pool = await getConnection();
+
+    if (!pool) {
+        return undefined;
+    }
+    /* *UPDATE table_name
+SET column1 = value1, column2 = value2, ...
+WHERE condition;*/
+
+    const query = "UPDATE CALENDARIO.Evento SET descricao = @p1, titulo = @p2, data = @p3 WHERE Evento.id = @p4;"
+    
+    const params = {
+        p1: model.descricao,
+        p2: model.titulo,
+        p3: model.data,
+        p4: model.id
+    }
+
+    let results;
+    try {
+        results = await pool.request().input('p1', sql.VarChar, params.p1)
+                                .input('p2', sql.VarChar, params.p2)
+                                .input('p3', sql.DateTime, params.p3)
+                                .input('p4', sql.Int, params.p4)
+                                .query(query)
+    } catch(e) {
+        console.log(e);
+        return false;
+    }
+
+    return results.rowsAffected;
+}
+
 // Inserts
 async function insertUsuario(model) {
     const pool = await getConnection();
@@ -337,4 +371,4 @@ async function createDatabase() {
     return true;
 }
 
-module.exports = {getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession, insertEvento, queryEvento, deleteEvento, removeSession, queryAllEventos}
+module.exports = {updateEvento, getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession, insertEvento, queryEvento, deleteEvento, removeSession, queryAllEventos}
