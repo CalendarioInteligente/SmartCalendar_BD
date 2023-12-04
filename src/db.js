@@ -78,6 +78,29 @@ async function querySession(model) {
     return results.recordset[0];
 }
 
+async function queryNotificacao(model) {
+    const pool = await getConnection();
+
+    if (!pool) {
+        return undefined;
+    }
+
+    const query = 'SELECT TOP(1) * FROM CALENDARIO.Session WHERE idEvento = @idEvento'
+    const params = {
+        idEvento: model.idEvento
+    }
+
+    let results;
+    try {
+        results = await pool.request().input('idEvento', sql.Int, params.idEvento)
+                                      .query(query)
+    } catch {
+        return false;
+    }
+
+    return results.recordset[0];
+}
+
 async function queryUsuarioByEmail(model) {
     const pool = await getConnection();
 
@@ -371,4 +394,10 @@ async function createDatabase() {
     return true;
 }
 
-module.exports = {updateEvento, getConnection, createDatabase, insertUsuario, insertSession, queryUsuarioByEmail, querySession, insertEvento, queryEvento, deleteEvento, removeSession, queryAllEventos}
+module.exports = {
+    updateEvento, 
+    getConnection, 
+    createDatabase, 
+    insertUsuario, 
+    queryNotificacao,
+    insertSession, queryUsuarioByEmail, querySession, insertEvento, queryEvento, deleteEvento, removeSession, queryAllEventos}

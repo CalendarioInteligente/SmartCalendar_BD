@@ -291,7 +291,9 @@ router.route('/api/user/:id/agendamentos').get(async (req, res) => {
             titulo: v.titulo,
             descricao: v.descricao,
             data: v.data,
-            id: v.id
+            id: v.id,
+            seen: v.seen,
+            notified: v.notified
         }
     })
 
