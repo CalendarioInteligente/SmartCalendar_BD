@@ -251,7 +251,7 @@ router.route('/api/agendamentos').post(async (req, res) => {
     if (result === undefined) {
         return res.status(500).json(newResponse('CBD', 'Não foi possivel acessar o banco de dados.'))
     } else if (result === false) {
-        return res.status(400).json(newResponse('ERR', 'Conflito com outros eventos.'))
+        return res.status(400).json(newResponse('ERR', 'Conflito com outros eventos ou você está tentando agendar para uma data que já passou.'))
     }
 
     return res.status(200).json(newResponse('OK', 'Seu agendamento foi armazenado com sucesso!'))
