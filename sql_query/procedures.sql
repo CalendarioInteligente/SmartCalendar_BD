@@ -70,5 +70,24 @@ BEGIN
 	DEALLOCATE cur_idDoUsuario
 END
 
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Procedure para deletar usuário
+CREATE PROCEDURE Calendario.DeletarUsuario
+@id INT
+AS
+BEGIN
+
+	DELETE FROM 
+		CALENDARIO.Evento
+	WHERE	
+		idUsuario = @id;
+
+	DELETE FROM	
+		CALENDARIO.Usuario
+	WHERE
+		id = @id;
+END
+
 
 
