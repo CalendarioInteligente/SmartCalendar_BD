@@ -210,7 +210,7 @@ router.route('/api/logout').post(async (req, res) => {
 
     res.clearCookie("session")
 
-    return res.status(200).json(newResponse('OK', 'Você foi disconectado.'))
+    return res.status(200).json(newResponse('OK', 'Você foi desconectado.'))
 })
 
 // Eventos
@@ -291,9 +291,9 @@ router.route('/api/user/:id/agendamentos').get(async (req, res) => {
             titulo: v.titulo,
             descricao: v.descricao,
             data: v.data,
-            id: v.id,
-            seen: v.seen,
-            notified: v.notified
+            id: v.id
+            //seen: v.seen,
+            //notified: v.notified
         }
     })
 
@@ -333,7 +333,7 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
 })
 .get(async (req, res) => {
     const id = parseInt(req.params?.id);
-    return res.status(500).json(newResponse('TODO', 'NOT IMPLEMENTED.'))
+    //return res.status(500).json(newResponse('TODO', 'NOT IMPLEMENTED.'))
 
     if (isNaN(id)) {
         return res.status(400).json(newResponse('COD', 'ID inválido.'))
@@ -362,9 +362,12 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
     }
 
     const toSend = {
-        titulo: result.titulo,
-        descricao: result.descricao,
-        id: id
+        "evento": {
+            titulo: result.titulo,
+            descricao: result.descricao,
+            data: result.data,
+            id: id
+        }
     }
 
     return res.status(200).json(newResponse('OK', 'O evento foi encontrado!', JSON.stringify(toSend)))
@@ -424,6 +427,6 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
         return res.status(400).json(newResponse('ERR', 'Conflito com outros eventos.'))
     }
 
-    return res.status(200).json(newResponse('OK', 'Seu agendamento foi armazenado com sucesso!'))
+    return res.status(200).json(newResponse('OK', 'Seu agendamento foi alterado com sucesso!'))
 })
 module.exports = router

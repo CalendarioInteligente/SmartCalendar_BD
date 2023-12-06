@@ -59,14 +59,31 @@ RESPONSE
 }
 ```
 
+`GET "/api/oauth"`
+
+```json
+{
+  "session": "session-id",
+  "userId": 1
+}
+```
+
+`POST "/api/logout"`
+
+```json
+{
+  "status": "OK",
+  "message": "Você foi desconectado."
+}
+```
+
 `POST "/api/agendamentos"`
 
 ```json
 {
   "titulo": "O Dia",
   "descricao": "Festa",
-  "data": "2012-04-23T18:25:43.000Z",
-  "tipo": 0
+  "data": "2012-04-23T18:25:43.000Z"
 }
 ```
 
@@ -77,6 +94,25 @@ RESPONSE
   "status": "OK",
   "message": "Seu agendamento foi armazenado com sucesso!",
   "data": null
+}
+```
+
+`GET "/api/user/:id/agendamentos"`
+
+RESPONSE
+
+```json
+{
+  "status": "OK",
+  "message": "Os agendamentos foram encontrados!",
+  "data": [
+    {
+      "titulo": "titulo",
+      "descricao": "descricao",
+      "data": "2012-04-23T18:25:43.000Z",
+      "id": 1
+    }
+  ]
 }
 ```
 
@@ -104,8 +140,28 @@ RESPONSE
     "evento": {
       "titulo": "Festa",
       "descricao": "Casa do João",
+      "data": "2012-04-23T18:25:43.000Z",
       "id": 1
     }
   }
+}
+```
+
+`PUT "/api/agendamentos/:id"`
+
+```json
+{
+  "titulo": "O Dia",
+  "descricao": "Festa",
+  "data": "2012-04-23T18:25:43.000Z"
+}
+```
+
+RESPONSE
+
+```json
+{
+  "status": "OK",
+  "message": "Seu agendamento foi alterado com sucesso!"
 }
 ```
