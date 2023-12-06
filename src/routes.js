@@ -309,11 +309,12 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
 
     // Verifica se este usuario tem permissão para deletar este evento
     const userId = await validateTokenGetId(req);
-    const evento = await db.queryEvento({id: id});
-
+    
     if (userId === undefined || userId === false) {
         return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
     }
+
+    const evento = await db.queryEvento({id: id});
     
     if (!evento) {
         return res.status(400).json(newResponse('EIN', 'Não foi possivel encontrar este evento.'))
@@ -378,13 +379,18 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
         return res.status(400).json(newResponse('COD', 'ID inválido.'))
     }
 
+    if (!await db.getConnection()) {
+        return res.status(500).json(newResponse('CBD', 'Sem conexão com o banco de dados'))
+    }
+
     // Verifica se este usuario tem permissão para deletar este evento
     const userId = await validateTokenGetId(req);
-    const evento = await db.queryEvento({id: id});
 
     if (userId === undefined || userId === false) {
         return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
     }
+
+    const evento = await db.queryEvento({id: id});
     
     if (!evento) {
         return res.status(400).json(newResponse('EIN', 'Não foi possivel encontrar este evento.'))
@@ -394,16 +400,12 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
         return res.status(400).json(newResponse('TIV', 'Você não está autorizado a fazer esta ação.'))
     } 
 
-    if (!await db.getConnection()) {
-        return res.status(500).json(newResponse('CBD', 'Sem conexão com o banco de dados'))
-    }
-
     if (Object.keys(req.body).length != 3) {
         return res.status(400).json(newResponse('DTE', 'Dados incorretos'))
     }
 
     if (titulo === undefined || descricao === undefined || data === undefined) {
-        return res.status(400).json(newResponse('DTE', 'Não omita nenhum dos dados, envie como nulo se for necessário.'))
+        return res.status(400).json(newResponse('DTE', 'Não omita nenhum dos dados.'))
     }
 
     // Cria modelo e envia para o BD
