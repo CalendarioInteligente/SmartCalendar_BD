@@ -37,3 +37,38 @@ BEGIN
         RETURN;
     END
 END
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Procedure de adicionar evento para todos os usuários
+CREATE PROCEDURE Calendario.aplicarEventoGlobalmente
+@descricao VARCHAR(200),
+@titulo VARCHAR(40),
+@data DATETIME
+AS
+BEGIN
+	DECLARE cur_idDoUsuario CURSOR
+		FOR SELECT id FROM CALENDARIO.Usuario;
+
+	DECLARE @id INT;
+
+	OPEN cur_idDoUsuario;
+
+	FETCH NEXT FROM cur_idDoUsuario
+		INTO @id;
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+
+		INSERT INTO CALENDARIO.Evento VALUES(@descricao, @titulo, @id, default, default, @data);
+
+		FETCH NEXT FROM cur_idDoUsuario
+		INTO @id;
+	END
+
+	CLOSE cur_idDoUsuario
+	DEALLOCATE cur_idDoUsuario
+END
+
+
+
