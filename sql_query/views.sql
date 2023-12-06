@@ -1,6 +1,7 @@
 -- VIEW EVENTO
 create or alter view CALENDARIO.ViewEventos as 
 select 
+	U.id,
 	U.nome,
 	U.sobrenome,
 	E.titulo,
@@ -9,4 +10,3 @@ select
 from
 	CALENDARIO.Usuario U
 	JOIN CALENDARIO.Evento E on U.id = E.idUsuario
-
