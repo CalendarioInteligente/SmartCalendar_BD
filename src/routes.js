@@ -341,32 +341,28 @@ router.route('/api/agendamentos/:id').delete(async (req, res) => {
 
     // Verifica se este usuario tem permissão para deletar este evento
     const userId = await validateTokenGetId(req);
-    const evento = await db.queryEvento({id: id});
+   
 
     if (userId === undefined || userId === false) {
         return res.status(400).json(newResponse('TIV', 'Não foi possivel validar seu token.'))
     }
     
-    if (eventoId === undefined || eventoId === false) {
+    const result = await db.queryEvento({id: id})
+
+    if (result === undefined || result === false) {
         return res.status(400).json(newResponse('EIN', 'Não foi possivel encontrar este evento.'))
     }
 
-    if (evento.idUsuario !== userId) {
+    if (result.idUsuario !== userId) {
         return res.status(400).json(newResponse('TIV', 'Você não está autorizado a fazer esta ação.'))
     } 
 
-    const result = db.queryEvento({id: id})
-
-    if (!result) {
-        return res.status(500).json(newResponse('NDT', 'Não foi possivel deletar este evento.'))
-    }
-
     const toSend = {
         "evento": {
-            titulo: result.titulo,
-            descricao: result.descricao,
-            data: result.data,
-            id: id
+            "titulo": result.titulo,
+            "descricao": result.descricao,
+            "data": result.data,
+            "id": id
         }
     }
 
