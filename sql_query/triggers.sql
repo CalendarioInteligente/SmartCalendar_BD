@@ -1,7 +1,7 @@
 
 CREATE TRIGGER CALENDARIO.trEventoCheck
 	ON CALENDARIO.Evento
-	for INSERT, UPDATE
+	after INSERT, UPDATE
 AS
 BEGIN
 	DECLARE @dataMarcada datetime,
@@ -14,7 +14,7 @@ BEGIN
 	from inserted
 
 	BEGIN
-		if @dataMarcada < @dataAtual
+		if @dataMarcada > @dataAtual
 		begin
 			Delete from CALENDARIO.Evento where id = @idEvento
 			RAISERROR('Data invalida.', 15, 2);
